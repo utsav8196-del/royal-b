@@ -26,7 +26,43 @@ const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
-app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:5173', credentials: true }));
+function normalizeOrigin(value) {
+  return String(value || '').trim().replace(/\/+$/, '');
+}
+
+function buildAllowedOrigins() {
+  const fromEnv = (process.env.CLIENT_URL || '')
+    .split(',')
+    .map(normalizeOrigin)
+    .filter(Boolean);
+
+  const defaults = [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'https://royal-five-neon.vercel.app',
+  ];
+
+  return new Set([...defaults, ...fromEnv.map(normalizeOrigin)]);
+}
+
+const allowedOrigins = buildAllowedOrigins();
+
+app.use(
+  cors({
+    credentials: true,
+    origin(origin, callback) {
+      // Allow non-browser clients / same-origin requests
+      if (!origin) return callback(null, true);
+
+      const cleaned = normalizeOrigin(origin);
+      if (allowedOrigins.has(cleaned)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
+  })
+);
 app.use(express.json({ limit: '2mb' }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
