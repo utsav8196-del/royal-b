@@ -54,14 +54,21 @@ app.use('/api/dashboard', requireDatabase, dashboardRoutes);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
+const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI || process.env.DATABASE_URL;
 
-if (!process.env.MONGO_URI) {
-  console.error('Missing MONGO_URI in server/.env — copy server/.env.example and configure MongoDB.');
+if (mongoUri && !process.env.MONGO_URI) {
+  process.env.MONGO_URI = mongoUri;
+}
+
+if (!mongoUri) {
+  console.error(
+    'Missing database URI. Set MONGO_URI (or MONGODB_URI / DATABASE_URL) in Render Environment variables.'
+  );
   process.exit(1);
 }
 
 if (!process.env.JWT_SECRET || process.env.JWT_SECRET.includes('change_this')) {
-  console.warn('Warning: Set a strong JWT_SECRET in server/.env for production.');
+  console.warn('Warning: Set a strong JWT_SECRET in Render Environment variables for production.');
 }
 
 app.listen(PORT, '0.0.0.0', () => {

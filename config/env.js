@@ -1,5 +1,6 @@
 const path = require('path');
 const dotenv = require('dotenv');
+const fs = require('fs');
 
 // Try multiple paths to find .env file
 const possiblePaths = [
@@ -11,27 +12,40 @@ const possiblePaths = [
 
 let envPath = null;
 for (const filePath of possiblePaths) {
-  try {
-    require('fs').accessSync(filePath);
+  if (fs.existsSync(filePath)) {
     envPath = filePath;
     break;
-  } catch (e) {
-    // Continue to next path
   }
 }
 
+const isRender = Boolean(process.env.RENDER || process.env.RENDER_EXTERNAL_URL);
+const hasRuntimeEnv = Boolean(
+  process.env.MONGO_URI ||
+  process.env.MONGODB_URI ||
+  process.env.DATABASE_URL ||
+  process.env.JWT_SECRET
+);
+
 if (!envPath) {
-  envPath = possiblePaths[0]; // Use first path for error message if none found
-}
+  // On cloud platforms, env vars are usually injected by the platform UI.
+  if (!isRender || !hasRuntimeEnv) {
+    console.warn('No .env file found. Using runtime environment variables only.');
+  }
+  module.exports = { envPath: null };
+} else {
+  const result = dotenv.config({ path: envPath });
 
-const result = dotenv.config({ path: envPath });
-
-if (result.error) {
-  console.warn(`Could not load .env from ${envPath}:`, result.error.message);
-} else if (!result.parsed || Object.keys(result.parsed).length === 0) {
-  console.warn(
-    `No variables loaded from ${envPath}. Ensure lines are not commented out (no leading #).`
-  );
+  if (result.error) {
+    if (!isRender || !hasRuntimeEnv) {
+      console.warn(`Could not load .env from ${envPath}:`, result.error.message);
+    }
+  } else if (!result.parsed || Object.keys(result.parsed).length === 0) {
+    if (!isRender || !hasRuntimeEnv) {
+      console.warn(
+        `No variables loaded from ${envPath}. Ensure lines are not commented out (no leading #).`
+      );
+    }
+  }
 }
 
 module.exports = { envPath };
