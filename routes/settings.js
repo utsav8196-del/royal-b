@@ -9,6 +9,7 @@ const DEFAULTS = {
   phone: '+91 9876543210',
   email: 'info@royalacademy.com',
   address: 'Near Shanti Multispeciality Hospital, Triveni Society, Rajkot, Gujarat',
+  workingHours: 'Mon – Sat : 8 AM – 8 PM',
   heroTitle: 'Empower Your Future with Royal Academy',
   heroSubtitle: 'Expert faculty, modern labs, and proven results in Rajkot.',
   popularCoursesTitle: 'Popular Courses',
