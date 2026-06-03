@@ -25,7 +25,7 @@ const fileFilter = (_req, file, cb) => {
   if (allowed.test(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error('Only image files are allowed (JPEG, PNG, GIF, WebP)'));
+    cb(new Error('Use JPEG, PNG, GIF, or WebP images only (max 5 MB)'));
   }
 };
 

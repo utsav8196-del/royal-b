@@ -4,7 +4,11 @@ const path = require('path');
 const auth = require('../middleware/auth');
 const adminOnly = require('../middleware/adminOnly');
 const { upload, uploadsDir } = require('../middleware/upload');
-const { isCloudinaryConfigured, uploadBuffer } = require('../config/cloudinary');
+const {
+  isCloudinaryConfigured,
+  uploadBuffer,
+  cloudinaryDeliveryUrl,
+} = require('../config/cloudinary');
 
 router.post('/image', auth, adminOnly, upload.single('image'), async (req, res, next) => {
   try {
@@ -15,14 +19,13 @@ router.post('/image', auth, adminOnly, upload.single('image'), async (req, res, 
     if (isCloudinaryConfigured()) {
       const result = await uploadBuffer(req.file.buffer);
       return res.status(201).json({
-        url: result.secure_url,
+        url: cloudinaryDeliveryUrl(result.secure_url),
         publicId: result.public_id,
         message: 'Image uploaded to Cloudinary successfully',
       });
     }
 
-    const baseUrl = process.env.API_PUBLIC_URL || `${req.protocol}://${req.get('host')}`;
-    const url = `${baseUrl}/uploads/${req.file.filename}`;
+    const url = `/uploads/${req.file.filename}`;
     res.status(201).json({
       url,
       filename: req.file.filename,

@@ -17,12 +17,30 @@ if (isCloudinaryConfigured()) {
   });
 }
 
+/** JPEG delivery — supported on virtually all phones, tablets, and browsers */
+function cloudinaryDeliveryUrl(secureUrl) {
+  if (!secureUrl || !secureUrl.includes('/image/upload/')) {
+    return secureUrl;
+  }
+  const segment = '/image/upload/';
+  const index = secureUrl.indexOf(segment);
+  const prefix = secureUrl.slice(0, index + segment.length);
+  const suffix = secureUrl.slice(index + segment.length);
+  if (/^(f_|q_|c_|w_|h_|g_)/.test(suffix)) {
+    return secureUrl;
+  }
+  return `${prefix}f_jpg,q_auto/${suffix}`;
+}
+
 function uploadBuffer(buffer, options = {}) {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       {
         folder: 'royal-academy',
         resource_type: 'image',
+        format: 'jpg',
+        quality: 'auto:good',
+        flags: 'progressive',
         ...options,
       },
       (error, result) => {
@@ -34,4 +52,9 @@ function uploadBuffer(buffer, options = {}) {
   });
 }
 
-module.exports = { cloudinary, isCloudinaryConfigured, uploadBuffer };
+module.exports = {
+  cloudinary,
+  isCloudinaryConfigured,
+  uploadBuffer,
+  cloudinaryDeliveryUrl,
+};

@@ -64,7 +64,20 @@ app.use(
   })
 );
 app.use(express.json({ limit: '2mb' }));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use(
+  '/uploads',
+  express.static(path.join(__dirname, 'uploads'), {
+    maxAge: '7d',
+    etag: true,
+    setHeaders(res, filePath) {
+      res.set('Access-Control-Allow-Origin', '*');
+      res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+      if (/\.(jpe?g|png|gif|webp)$/i.test(filePath)) {
+        res.set('Cache-Control', 'public, max-age=604800, immutable');
+      }
+    },
+  })
+);
 
 app.get('/api/health', (req, res) => {
   const dbOk = isDatabaseConnected();
