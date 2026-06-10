@@ -64,6 +64,7 @@ router.post(
         role: 'Student',
         message: req.body.message,
         rating: req.body.rating,
+        image: req.body.image || '/default-profile.jpg',
         status: 'active',
         showOnHome: true,
       });
