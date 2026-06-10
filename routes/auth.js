@@ -65,8 +65,14 @@ router.post(
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) return res.status(400).json({ message: 'Invalid email or password' });
 
+      const isFirstLogin = !user.hasLoggedIn;
+      if (isFirstLogin) {
+        user.hasLoggedIn = true;
+        await user.save();
+      }
+
       const token = signToken(user);
-      res.json({ token, user: userResponse(user) });
+      res.json({ token, user: userResponse(user), isFirstLogin });
     } catch (err) {
       next(err);
     }

@@ -53,6 +53,27 @@ router.post(
   }
 );
 
+router.post(
+  '/student',
+  auth,
+  validateBody({ message: { required: true, minLength: 10 } }),
+  async (req, res, next) => {
+    try {
+      const item = await Testimonial.create({
+        name: req.user.name,
+        role: 'Student',
+        message: req.body.message,
+        rating: req.body.rating,
+        status: 'active',
+        showOnHome: true,
+      });
+      res.status(201).json(item);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
 router.put('/:id', auth, adminOnly, async (req, res, next) => {
   try {
     const item = await Testimonial.findByIdAndUpdate(req.params.id, req.body, { new: true });
